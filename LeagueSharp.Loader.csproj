@@ -139,11 +139,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Resource>
-     <Page Include="Resources\Icons.xaml">
+    <Page Include="Resources\Icons.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-     <Page Include="Resources\Language\Arabic.xaml">
+    <Page Include="Resources\Language\Arabic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -295,11 +295,11 @@
     <Resource Include="Resources\Entypo-license.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AppModule.InterProcessComm\AppModule.InterProcessComm.csproj">
+    <ProjectReference Include="..\Bot4U\AppModule.InterProcessComm\AppModule.InterProcessComm.csproj">
       <Project>{e98f1f7e-40b6-44c8-ac66-ec867b141fa1}</Project>
       <Name>AppModule.InterProcessComm</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AppModule.NamedPipes\AppModule.NamedPipes.csproj">
+    <ProjectReference Include="..\Bot4U\AppModule.NamedPipes\AppModule.NamedPipes.csproj">
       <Project>{077b53bb-404a-4b2f-ba17-aae98c5e9c66}</Project>
       <Name>AppModule.NamedPipes</Name>
     </ProjectReference>

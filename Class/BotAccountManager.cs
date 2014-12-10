@@ -23,11 +23,37 @@ namespace LeagueSharp.Loader.Class
         private string _LauncherPath = @"C:\Riot Games\League of Legends\";
         private Dictionary<string, DateTime?> _HeartbeatMonitor = new Dictionary<string, DateTime?>();
         private Timer _MyTimer;
+        private Thread _DeadBotThread;
 
         public BotAccountManager() :
             base()
         {
+            _DeadBotThread = new Thread(
+                () =>
+                {
+                    while (true)
+                    {
+                        foreach (BotAccount bot in this)
+                        {
+                            if(bot.IsRunning && !bot.HasUpdatedStatusRecently())
+                            {
+                                bot.IsRunning = false;
+
+                                Thread.Sleep(5* 1000);
+
+                                bot.IsRunning = true;
+                            }
+                        }
+
+                        Thread.Sleep(60*1000);
+                    }
+                });
+
+
+
             LoadBots();
+
+            _DeadBotThread.Start();
             //_MyTimer = new Timer(HeartbeatCallback, null, 5 * 1000, 5 * 1000);
         }
        

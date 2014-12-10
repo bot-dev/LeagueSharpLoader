@@ -24,6 +24,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using LeagueSharp.Loader.Data;
+using System.Media;
+using System.Windows.Forms;
+using System.Text;
+using System.Collections.Generic;
 
 #endregion
 
@@ -31,7 +35,7 @@ namespace LeagueSharp.Loader.Class
 {
     public static class Injection
     {
-        [ UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode) ]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool InjectDLLDelegate(int processId, string path);
 
         public delegate void OnInjectDelegate(EventArgs args);
@@ -39,6 +43,12 @@ namespace LeagueSharp.Loader.Class
         public static event OnInjectDelegate OnInject;
 
         private static InjectDLLDelegate injectDLL = null;
+
+        const UInt32 WM_KEYDOWN = 0x0100;
+        const UInt32 WM_KEYUP = 0x0101;
+        const UInt32 WM_SYSKEYDOWN = 0x0104;
+        const UInt32 WM_SYSKEYUP = 0x0105;
+        const int VK_F5 = 0x74;
 
         public static bool IsInjected
         {
@@ -62,20 +72,55 @@ namespace LeagueSharp.Loader.Class
             }
         }
 
-        [ DllImport("kernel32.dll") ]
+        public static bool Injecterized(Process leagueProcess)
+        {
+            if (leagueProcess != null)
+            {
+                try
+                {
+                    return
+                    leagueProcess.Modules.Cast<ProcessModule>()
+                        .Any(processModule => processModule.ModuleName == Path.GetFileName(Directories.CoreFilePath));
+                }
+                catch (Exception e)
+                {
+                    Utility.Log(LogStatus.Error, "Injector", string.Format("Error - {0}", e.ToString()), Logs.MainLog);
+                }
+            }
+            return false;
+        }
+
+        [DllImport("kernel32.dll")]
         public static extern IntPtr LoadLibrary(string dllToLoad);
 
-        [ DllImport("kernel32.dll") ]
+        [DllImport("kernel32.dll")]
         public static extern IntPtr GetProcAddress(IntPtr hModule, string procedureName);
 
-        [ DllImport("user32.dll", CharSet = CharSet.Auto) ]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, ref COPYDATASTRUCT lParam);
 
-        [ DllImport("user32.dll", CharSet = CharSet.Auto) ]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, ref COPYDATASTRUCT lParam);
 
-        [ DllImport("user32.dll", SetLastError = true) ]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
+
+        [DllImport("user32.dll")]
+        public static extern bool PostMessage(IntPtr hWnd, UInt32 Msg, int wParam, int lParam);
+
+        [DllImport("user32.dll")]
+        public static extern int SetForegroundWindow(IntPtr hWnd);
+
+        private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder strText, int maxCount);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern int GetWindowTextLength(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
 
         private static void ResolveInjectDLL()
         {
@@ -101,6 +146,7 @@ namespace LeagueSharp.Loader.Class
         public static Process GetLeagueProcess()
         {
             var processesByName = Process.GetProcessesByName("League of Legends");
+            IEnumerable<Process> processes = Process.GetProcesses().ToList().Where(p => p.ProcessName == "League of Legends");
             if (processesByName.Length > 0)
             {
                 return processesByName[0];
@@ -108,35 +154,91 @@ namespace LeagueSharp.Loader.Class
             return null;
         }
 
+        public static List<Process> GetLeagueProcesses()
+        {
+            var processesByName = Process.GetProcessesByName("League of Legends");
+
+            if (processesByName.Length > 0)
+            {
+                return processesByName.ToList();
+            }
+            return null;
+        }
+
+        public static string GetWindowText(IntPtr hWnd)
+        {
+            int size = GetWindowTextLength(hWnd);
+            if (size++ > 0)
+            {
+                var builder = new StringBuilder(size);
+                GetWindowText(hWnd, builder, builder.Capacity);
+                return builder.ToString();
+            }
+
+            return String.Empty;
+        }
+
+        public static IEnumerable<IntPtr> FindWindowsWithText(string titleText)
+        {
+            IntPtr found = IntPtr.Zero;
+            List<IntPtr> windows = new List<IntPtr>();
+
+            EnumWindows(delegate(IntPtr wnd, IntPtr param)
+            {
+                if (GetWindowText(wnd).Contains(titleText))
+                {
+                    windows.Add(wnd);
+                }
+                return true;
+            },
+                        IntPtr.Zero);
+
+            return windows;
+        }
+
+        private static HashSet<IntPtr> _Injected = new HashSet<IntPtr>();
+
         public static void Pulse()
         {
-            var leagueProcess = GetLeagueProcess();
-            try
+            var leagueProcesses = GetLeagueProcesses();
+
+            if (leagueProcesses != null)
             {
-                if (leagueProcess == null)
-                    return;
-
-                Config.Instance.LeagueOfLegendsExePath = leagueProcess.Modules[0].FileName;
-
-                if (!IsInjected && Updater.UpdateCore(leagueProcess.Modules[0].FileName, true).Item1)
+                foreach (var leagueProcess in leagueProcesses)
                 {
-                    if (injectDLL == null)
+                    try
                     {
-                        ResolveInjectDLL();
+                        Config.Instance.LeagueOfLegendsExePath = leagueProcess.Modules[0].FileName;
+                        if (leagueProcess != null && !Injecterized(leagueProcess) && Updater.UpdateCore(leagueProcess.Modules[0].FileName, true).Item1)
+                        {
+                            if (injectDLL == null)
+                            {
+                                ResolveInjectDLL();
+                            }
+
+                            var num = injectDLL(leagueProcess.Id, Directories.CoreFilePath)
+                                ? 1
+                                : 0;
+
+
+
+                            IntPtr leagueWnd = leagueProcess.MainWindowHandle;
+
+                            foreach (var assembly in Config.Instance.SelectedProfile.InstalledAssemblies.Where(a => a.InjectChecked))
+                            {
+                                Injection.LoadAssembly(leagueWnd, assembly);
+                            }
+
+                            if (OnInject != null)
+                            {
+                                OnInject(EventArgs.Empty);
+                            }
+                        }
                     }
-
-                    var num = injectDLL(leagueProcess.Id, Directories.CoreFilePath)
-                        ? 1
-                        : 0;
-
-                    if (OnInject != null)
+                    catch
                     {
-                        OnInject(EventArgs.Empty);
                     }
                 }
-            }
-            catch
-            {
             }
         }
 
@@ -177,7 +279,8 @@ namespace LeagueSharp.Loader.Class
         {
             public int cbData;
             public int dwData;
-            [ MarshalAs(UnmanagedType.LPWStr) ] public string lpData;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string lpData;
         }
     }
 }

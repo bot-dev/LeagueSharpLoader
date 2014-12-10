@@ -19,6 +19,7 @@ namespace LeagueSharp.Loader.Class
         Unknown
     }
 
+    // Testing 123
     public class BotAccount : INotifyPropertyChanged
     {
         private bool _IsRunning = false;
@@ -32,6 +33,7 @@ namespace LeagueSharp.Loader.Class
         private string _StartingExperience = "?";
         private string _CurrentExperience = "?";
         private DateTime? _StartDate;
+        private DateTime _LastUpdate;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -92,6 +94,7 @@ namespace LeagueSharp.Loader.Class
                     if (_IsRunning)
                     {
                         _StartDate = DateTime.Now;
+                        _LastUpdate = DateTime.Now;
                         OnPropertyChanged("StartDate");
                         _Bot.Start();
                     }
@@ -272,6 +275,17 @@ namespace LeagueSharp.Loader.Class
         void _Bot_UpdateChanged(UpdateChangedEventArgs e)
         {
             Status = e.Update;
+            _LastUpdate = DateTime.Now;
+        }
+
+        public bool HasUpdatedStatusRecently()
+        {
+            if(Status.Contains("error"))
+            {
+                return true;
+            }
+
+            return DateTime.Now.Subtract(_LastUpdate).TotalMinutes >= 25;
         }
 
         private void OnPropertyChanged(string propertyName)
