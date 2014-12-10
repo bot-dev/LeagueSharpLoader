@@ -56,7 +56,7 @@ namespace LeagueSharp.Loader
             {
                 Config.Instance = ((Config)Utility.MapXmlFileToClass(typeof(Config), Directories.ConfigFilePath));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 System.Windows.MessageBox.Show("Couldn't load config.xml.");
                 File.Delete(Directories.ConfigFilePath);
@@ -77,6 +77,9 @@ namespace LeagueSharp.Loader
                 {
                     case "DE":
                         dict.Source = new Uri("..\\Resources\\Language\\German.xaml", UriKind.Relative);
+                        break;
+                    case "AR":
+                        dict.Source = new Uri("..\\Resources\\Language\\Arabic.xaml", UriKind.Relative);
                         break;
                     case "ES":
                         dict.Source = new Uri("..\\Resources\\Language\\Spanish.xaml", UriKind.Relative);

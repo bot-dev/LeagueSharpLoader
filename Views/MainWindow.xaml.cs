@@ -111,18 +111,8 @@ namespace LeagueSharp.Loader.Views
             Browser.Visibility = Visibility.Hidden;
             DataContext = this;
             GeneralSettingsItem.IsSelected = true;
-
-            #region ContextMenu.DevMenu
-            DevMenu.Visibility = Config.Instance.ShowDevOptions ? Visibility.Visible : Visibility.Collapsed;
-            Config.PropertyChanged += (o, args) =>
-            {
-                if (args.PropertyName == "ShowDevOptions")
-                {
-                    DevMenu.Visibility = Config.Instance.ShowDevOptions ? Visibility.Visible : Visibility.Collapsed;
-                }
-            };
-            #endregion
-
+            DevMenu.Visibility = Config.ShowDevOptions ? Visibility.Visible : Visibility.Hidden;
+            DevMenu.Height = Config.ShowDevOptions ? DevMenu.Height : 0;
             if (!File.Exists(Directories.CoreFilePath))
             {
                 System.Windows.MessageBox.Show(string.Format("Couldn't find {0}", Path.GetFileName(Directories.CoreFilePath)));
@@ -144,7 +134,7 @@ namespace LeagueSharp.Loader.Views
                         }
                     }
                 });
-            
+
             //Try to login with the saved credentials.
             if (!Auth.Login(Config.Instance.Username, Config.Instance.Password).Item1)
             {
@@ -230,7 +220,7 @@ namespace LeagueSharp.Loader.Views
                                     StatusString = Utility.GetMultiLanguageText("Unknown");
                                     break;
                             }
-                            
+
                             return;
                         }
                     }
@@ -363,7 +353,7 @@ namespace LeagueSharp.Loader.Views
                 await
                     this.ShowLoginAsync(
                         "LeagueSharp", "Sign in",
-                        new LoginDialogSettings { ColorScheme = MetroDialogOptions.ColorScheme, NegativeButtonVisibility = Visibility.Visible});
+                        new LoginDialogSettings { ColorScheme = MetroDialogOptions.ColorScheme, NegativeButtonVisibility = Visibility.Visible });
 
             var loginResult = new Tuple<bool, string>(false, "Cancel button pressed");
             if (result != null)
@@ -446,7 +436,7 @@ namespace LeagueSharp.Loader.Views
             {
                 System.Windows.MessageBox.Show(Utility.GetMultiLanguageText("ConfigWriteError"));
             }
-            
+
             KeyboardHook.UnHook();
             InjectThread.Abort();
 
@@ -589,7 +579,7 @@ namespace LeagueSharp.Loader.Views
             {
                 System.Diagnostics.Process.Start(selectedAssembly.SvnUrl);
             }
-            else if(Directory.Exists(Path.GetDirectoryName(selectedAssembly.PathToProjectFile)))
+            else if (Directory.Exists(Path.GetDirectoryName(selectedAssembly.PathToProjectFile)))
             {
                 System.Diagnostics.Process.Start(Path.GetDirectoryName(selectedAssembly.PathToProjectFile));
             }
@@ -640,11 +630,11 @@ namespace LeagueSharp.Loader.Views
         {
             var assemblyName = await this.ShowInputAsync("New Project", "Enter the new project name");
 
-            if(assemblyName != null)
+            if (assemblyName != null)
             {
                 assemblyName = Regex.Replace(assemblyName, @"[^A-Za-z0-9]+", "");
             }
-            
+
             if (!string.IsNullOrEmpty(assemblyName))
             {
                 var leagueSharpAssembly = Utility.CreateEmptyAssembly(assemblyName);
@@ -680,7 +670,7 @@ namespace LeagueSharp.Loader.Views
             try
             {
                 var source = Path.GetDirectoryName(selectedAssembly.PathToProjectFile);
-                var destination = Path.Combine(Directories.LocalRepoDir, selectedAssembly.Name) + "_clone_" +  Environment.TickCount.GetHashCode().ToString("X");
+                var destination = Path.Combine(Directories.LocalRepoDir, selectedAssembly.Name) + "_clone_" + Environment.TickCount.GetHashCode().ToString("X");
                 Utility.CopyDirectory(source, destination);
                 var leagueSharpAssembly = new LeagueSharpAssembly(selectedAssembly.Name + "_clone", Path.Combine(destination, Path.GetFileName(selectedAssembly.PathToProjectFile)), "");
                 leagueSharpAssembly.Compile();
@@ -738,7 +728,7 @@ namespace LeagueSharp.Loader.Views
                 {
                     var assembly = obj as LeagueSharpAssembly;
 
-                    if(searchText == "checked")
+                    if (searchText == "checked")
                     {
                         return assembly.InjectChecked;
                     }
@@ -758,7 +748,7 @@ namespace LeagueSharp.Loader.Views
 
         private void MainWindow_OnActivated(object sender, EventArgs e)
         {
-            
+
 
             if (FirstTimeActivated)
             {
@@ -821,8 +811,8 @@ namespace LeagueSharp.Loader.Views
         private async void ShowProfileNameChangeDialog()
         {
             var result = await this.ShowInputAsync(Utility.GetMultiLanguageText("Rename"), Utility.GetMultiLanguageText("RenameText"), new MetroDialogSettings
-            { 
-            DefaultText = Config.Instance.SelectedProfile.Name,
+            {
+                DefaultText = Config.Instance.SelectedProfile.Name,
             });
 
             if (!string.IsNullOrEmpty(result))
@@ -913,12 +903,32 @@ namespace LeagueSharp.Loader.Views
 
         private void SettingsButton_OnClick(object sender, RoutedEventArgs e)
         {
-            MainTabControl.SelectedIndex = 2;
+            MainTabControl.SelectedIndex = 3;
         }
 
         private void StatusButton_OnClick(object sender, RoutedEventArgs e)
         {
-           CheckForUpdates(true, true, true);
+            CheckForUpdates(true, true, true);
+        }
+
+        private void AddBotButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(UserNameTextBox.Text) && !string.IsNullOrEmpty(PasswordTextBox.Text))
+            {
+                //Config.BotManager.Add(UserNameTextBox.Text, PasswordTextBox.Text);
+                UserNameTextBox.Text = string.Empty;
+                PasswordTextBox.Text = string.Empty;
+            }
+        }
+
+        private void LoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            //Config.BotManager.LoadBots();
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            //Config.BotManager.SaveBots();
         }
     }
 }

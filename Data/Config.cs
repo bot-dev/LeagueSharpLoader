@@ -76,7 +76,8 @@ namespace LeagueSharp.Loader.Data
     [XmlRoot(Namespace = "", IsNullable = false)]
     public class Config : INotifyPropertyChanged
     {
-        [XmlIgnore] public static Config Instance;
+        [XmlIgnore]
+        public static Config Instance;
         private bool _firstRun = true;
         private Hotkeys _hotkeys;
 
@@ -84,6 +85,10 @@ namespace LeagueSharp.Loader.Data
         private ObservableCollection<string> _knownRepositories;
         private string _leagueOfLegendsExePath;
         private ObservableCollection<Profile> _profiles;
+        [XmlIgnore]
+        private PipeManager _PipeManager;
+        [XmlIgnore]
+        private BotAccountManager _BotAccountManager = new BotAccountManager();
         private string _selectedLanguage;
         private Profile _selectedProfile;
         private ConfigSettings _settings;
@@ -195,6 +200,33 @@ namespace LeagueSharp.Loader.Data
             }
         }
 
+        [XmlIgnore]
+        public BotAccountManager BotManager
+        {
+            get { return _BotAccountManager; }
+            set
+            {
+                if (_BotAccountManager != value)
+                {
+                    _BotAccountManager = value;
+                    OnPropertyChanged("BotManager");
+                }
+            }
+        }
+
+        [XmlIgnore]
+        public PipeManager PipelineManager
+        {
+            get { return _PipeManager; }
+            set
+            {
+                if (_PipeManager != value)
+                {
+                    _PipeManager = value;
+                }
+            }
+        }
+
         [XmlArrayItem("KnownRepositories", IsNullable = true)]
         public ObservableCollection<string> KnownRepositories
         {
@@ -299,6 +331,8 @@ namespace LeagueSharp.Loader.Data
         }
     }
 
+
+
     [XmlType(AnonymousType = true)]
     public class Hotkeys : INotifyPropertyChanged
     {
@@ -378,7 +412,7 @@ namespace LeagueSharp.Loader.Data
                     return 0x11;
                 }
 
-                return (byte) KeyInterop.VirtualKeyFromKey(Hotkey);
+                return (byte)KeyInterop.VirtualKeyFromKey(Hotkey);
             }
             set { }
         }
