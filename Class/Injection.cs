@@ -204,7 +204,6 @@ namespace LeagueSharp.Loader.Class
 
             if (leagueProcesses != null)
             {
-                using System.Threading.Tasks;
                 foreach (var leagueProcess in leagueProcesses)
                 {
                     try
