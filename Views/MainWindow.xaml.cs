@@ -915,7 +915,7 @@ namespace LeagueSharp.Loader.Views
         {
             if (!string.IsNullOrEmpty(UserNameTextBox.Text) && !string.IsNullOrEmpty(PasswordTextBox.Text))
             {
-                //Config.BotManager.Add(UserNameTextBox.Text, PasswordTextBox.Text);
+                Config.BotManager.Add(UserNameTextBox.Text, PasswordTextBox.Text);
                 UserNameTextBox.Text = string.Empty;
                 PasswordTextBox.Text = string.Empty;
             }
@@ -923,12 +923,12 @@ namespace LeagueSharp.Loader.Views
 
         private void LoadButton_Click(object sender, RoutedEventArgs e)
         {
-            //Config.BotManager.LoadBots();
+            Config.BotManager.LoadBots();
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            //Config.BotManager.SaveBots();
+            Config.BotManager.SaveBots();
         }
     }
 }

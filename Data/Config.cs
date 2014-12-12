@@ -86,8 +86,6 @@ namespace LeagueSharp.Loader.Data
         private string _leagueOfLegendsExePath;
         private ObservableCollection<Profile> _profiles;
         [XmlIgnore]
-        private PipeManager _PipeManager;
-        [XmlIgnore]
         private BotAccountManager _BotAccountManager = new BotAccountManager();
         private string _selectedLanguage;
         private Profile _selectedProfile;
@@ -210,19 +208,6 @@ namespace LeagueSharp.Loader.Data
                 {
                     _BotAccountManager = value;
                     OnPropertyChanged("BotManager");
-                }
-            }
-        }
-
-        [XmlIgnore]
-        public PipeManager PipelineManager
-        {
-            get { return _PipeManager; }
-            set
-            {
-                if (_PipeManager != value)
-                {
-                    _PipeManager = value;
                 }
             }
         }
