@@ -22,12 +22,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using LeagueSharp.Loader.Data;
 using System.Media;
 using System.Windows.Forms;
 using System.Text;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -204,10 +204,18 @@ namespace LeagueSharp.Loader.Class
 
             if (leagueProcesses != null)
             {
+                using System.Threading.Tasks;
                 foreach (var leagueProcess in leagueProcesses)
                 {
                     try
                     {
+                        //Don't inject untill we checked that there are not updates for the loader.
+                        if(Updater.Updating || !Updater.CheckedForUpdates)
+                            return;
+
+                        if (leagueProcess == null)
+                            return;
+
                         Config.Instance.LeagueOfLegendsExePath = leagueProcess.Modules[0].FileName;
                         if (leagueProcess != null && !Injecterized(leagueProcess) && Updater.UpdateCore(leagueProcess.Modules[0].FileName, true).Item1)
                         {
