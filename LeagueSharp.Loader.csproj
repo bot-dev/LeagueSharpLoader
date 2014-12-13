@@ -303,7 +303,7 @@
       <Project>{077b53bb-404a-4b2f-ba17-aae98c5e9c66}</Project>
       <Name>AppModule.NamedPipes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\VoliBotCSharp\RitoBot.csproj">
+    <ProjectReference Include="..\VoliBotCSharp\RitoBot.csproj">
       <Project>{a6c071a4-bf72-4851-aa1b-252c99cead95}</Project>
       <Name>RitoBot</Name>
     </ProjectReference>
