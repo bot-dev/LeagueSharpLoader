@@ -19,7 +19,7 @@ namespace LeagueSharp.Loader.Class
         Unknown
     }
 
-    // Testing 123
+    // Testing 123456
     public class BotAccount : INotifyPropertyChanged
     {
         private bool _IsRunning = false;
